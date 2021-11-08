@@ -1,3 +1,38 @@
+from typing import Iterator, List
+
+class EncodingError:
+    def __init__(self, raw: str) -> None:
+        self.raw = raw
+        self.valid = []
+        self.not_valid = []
+
+    def parse(self) -> List[int]:
+        return [int(num) for num in self.raw.split("\n")]
+
+    # Function Copy from Joe Grus
+    def not_sum(self, lookback: int = 25) -> Iterator: 
+        q = []
+        for n in self.parse():
+            if len(q) < lookback:
+                q.append(n)
+            else:
+                sum = {
+                    a + b
+                    for i, a in enumerate(q)
+                    for j, b in enumerate(q)
+                    if i < j
+                }
+                if n not in sum:
+                    yield n
+                
+                q.append(n)
+                q = q[1:]
+
+
+#
+# UNIT TESTS
+#
+
 """
 https://adventofcode.com/2020/day/9
 """
@@ -22,41 +57,14 @@ RAW = """35
 309
 576"""
 
-from typing import List, NamedTuple, Sequence
+encoder = EncodingError(RAW)
 
-class Xmas(NamedTuple):
-    valid: List[int]
-    invalid: List[int]
+assert next(encoder.not_sum(lookback=5)) == 127
 
-
-
-class EncodingError:
-    def __init__(self, raw: str) -> None:
-        self.raw = raw
-        self.exist = []
-
-    def __parse(self) -> List[int]:
-        return [int(num) for num in self.raw.split("\n")]
-
-    def preambling(self, length: int = 5):
-        """
-        The Function will divde list in nested list
-        :Params: length
-        :Return: List
-        """
-        series_of_num = self.__parse()
-
-        previous_num = list(series_of_num[:length])
-        print(previous_num)
-        
-
-
-            
-
-
-        
-
-encoder = EncodingError(RAW).preambling()
-print(encoder)
-
+#
+# Problem
+#
+with open("../inputs/day09.txt") as f:
+    error_encoder = EncodingError(f.read())
+    print(next(error_encoder.not_sum()))
 
