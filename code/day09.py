@@ -27,7 +27,42 @@ class EncodingError:
                 
                 q.append(n)
                 q = q[1:]
+    
+    def xmas_encrypted_list(self, lookback: int = 25) -> List[int]:
+        q = []
+        for n in self.parse():
+            if len(q) < lookback:
+                q.append(n)
+            else:
+                sum = {
+                    a + b
+                    for i, a in enumerate(q)
+                    for j, b in enumerate(q)
+                    if i < j
+                }
+                if n not in sum:
+                    print(n)
+                
+                q.append(n)
+                q = q[1:]
 
+    def range_with_sum(self, target: int) -> List[int]:
+        for i, n in enumerate(self.parse()):
+            j = i
+            total = n
+            while total < target:
+                j += 1
+                total += self.parse()[j]
+            if total == target:
+                slice = self.parse()[i: j+1]
+                assert sum(slice) == target
+                return slice
+        raise RuntimeError()
+
+    def encryption_weakness(self, lookback: int = 25) -> int:
+        target = next(self.not_sum(lookback))
+        slice = self.range_with_sum(target)
+        return min(slice) + max(slice)
 
 #
 # UNIT TESTS
@@ -60,6 +95,7 @@ RAW = """35
 encoder = EncodingError(RAW)
 
 assert next(encoder.not_sum(lookback=5)) == 127
+assert encoder.encryption_weakness(5) == 62
 
 #
 # Problem
@@ -67,4 +103,5 @@ assert next(encoder.not_sum(lookback=5)) == 127
 with open("../inputs/day09.txt") as f:
     error_encoder = EncodingError(f.read())
     print(next(error_encoder.not_sum()))
+    print(error_encoder.encryption_weakness())
 
